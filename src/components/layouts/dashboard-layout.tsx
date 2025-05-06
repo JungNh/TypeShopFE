@@ -9,8 +9,9 @@ const DashboardLayout = () => {
   const { userInfo } = useAppSelector((state) => state.login);
   const navigate = useNavigate();
   useEffect(() => {
-    if (!userInfo && !userInfo?.isAdmin) {
+    if (!userInfo?.isAdmin) {
       navigate('/');
+      console.log('first')
     }
   }, [userInfo]);
 

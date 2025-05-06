@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { User } from '../../utils/interfaces';
-import publicAxios from '../../utils/public-axios';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { User } from "../../utils/interfaces";
+import publicAxios from "../../utils/public-axios";
 
 interface ProductSliceState {
   user: User | null;
@@ -15,7 +15,7 @@ const initialState: ProductSliceState = {
 };
 
 export const getUserBydId = createAsyncThunk(
-  'users/:id',
+  "users/:id",
   async (id: string | undefined) => {
     try {
       const res = await publicAxios.get(`/users/${id}`);
@@ -27,9 +27,13 @@ export const getUserBydId = createAsyncThunk(
 );
 
 export const userDetailsSlice = createSlice({
-  name: 'user-detail',
+  name: "user-detail",
   initialState,
-  reducers: {},
+  reducers: {
+    userDetailLogout: (state: ProductSliceState) => {
+      state.user = null;
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(getUserBydId.pending, (state) => {
       // Add user to the state array
@@ -48,3 +52,5 @@ export const userDetailsSlice = createSlice({
 // Action creators are generated for each case reducer function
 
 export default userDetailsSlice;
+
+export const { userDetailLogout } = userDetailsSlice.actions;

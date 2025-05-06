@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../redux';
 import { reset } from '../redux/cart/cart-slice';
 import { userLogout } from '../redux/users/login-slice';
+import { userDetailLogout } from '../redux/users/user-details';
 
 const Header = () => {
   const { userInfo } = useAppSelector((state) => state.login);
@@ -12,6 +13,7 @@ const Header = () => {
 
   const onLogout = () => {
     dispatch(userLogout());
+    dispatch(userDetailLogout());
     dispatch(reset());
     navigate('/login');
   };
