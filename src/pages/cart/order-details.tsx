@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -34,7 +34,6 @@ const OrderDetails = () => {
   const { id } = useParams();
   const [showPay, setShowPay] = useState(false);
   const { address, city, postalCode } = order?.shippingAddress || {};
-  const [step, setStep] = useState(order?.status);
 
   const steps = ["Order", "Shipping", "Delivered", "Received"];
   const iconSteps = [
@@ -78,8 +77,8 @@ const OrderDetails = () => {
     dispatch(getOrderById(id));
   }, [dispatch, id]);
 
-  const getProgress = () => {
-    switch (step) {
+  const getProgress = useCallback(() => {
+    switch (order?.status) {
       case "order":
         return 0;
       case "shipping":
@@ -91,7 +90,7 @@ const OrderDetails = () => {
       default:
         return 0;
     }
-  };
+  }, [order?.status]);
 
   return (
     <DefaultLayout title="order payment">
@@ -104,10 +103,6 @@ const OrderDetails = () => {
           handleClose={() => setShowPay(false)}
         />
         <h2 className="mb-2">Payment</h2>
-
-        {/* <div className="mb-5">
-          <span> {`Address:  ${postalCode} ${address}, ${city}`}</span>
-        </div> */}
 
         {loading ? (
           <Loader />

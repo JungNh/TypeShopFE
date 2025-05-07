@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card, Col, ListGroup, ProgressBar, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../redux";
@@ -31,8 +31,8 @@ const OrderDetailAdmin = () => {
     <IoFileTrayStackedOutline style={{ width: 30, height: 30 }} />,
   ];
 
-  const getProgress = () => {
-    switch (step) {
+  const getProgress = useCallback(() => {
+    switch (order?.status) {
       case "order":
         return 0;
       case "shipping":
@@ -44,7 +44,7 @@ const OrderDetailAdmin = () => {
       default:
         return 0;
     }
-  };
+  }, [order?.status]);
 
   const itemsPrice: number | undefined = order?.cartItems.reduce(
     (acc, item) => acc + item.qty * item.price_sale,

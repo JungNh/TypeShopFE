@@ -17,6 +17,7 @@ type Ordertypes = {
   totalPrice: number;
   isPaid: boolean;
   createdAt: Date;
+  status: "order" | "shipping" | "delivered" | "received";
 };
 
 export interface OrderSliceState {
