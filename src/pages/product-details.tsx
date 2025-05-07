@@ -95,7 +95,7 @@ const ProductDetails = () => {
                   {" "}
                   <h5 className=" d-flex justify-content-between align-items-center">
                     <span>Price:</span>
-                    <span>{formatCurrencry(product.price)}</span>
+                    <span>{formatCurrencry(product.price_sale)}</span>
                   </h5>
                 </ListGroup.Item>
 

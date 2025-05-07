@@ -16,7 +16,7 @@ const Checkout = () => {
 
   const navigate = useNavigate();
   const itemsPrice = cartItems.reduce(
-    (acc, item) => acc + item.qty * item.price,
+    (acc, item) => acc + item.qty * item.price_sale,
     0
   );
 
@@ -73,7 +73,7 @@ const Checkout = () => {
                         <Col md={6}>{item.name}</Col>
                         <Col>{item?.qty}</Col>
 
-                        <Col>{formatCurrencry(item.price * item.qty)}</Col>
+                        <Col>{formatCurrencry(item.price_sale * item.qty)}</Col>
                         <Col></Col>
                       </Row>
                     </ListGroup.Item>
@@ -95,7 +95,7 @@ const Checkout = () => {
                     <span>
                       {formatCurrencry(
                         cartItems.reduce(
-                          (acc, item) => acc + item.price * item.qty,
+                          (acc, item) => acc + item.price_sale * item.qty,
                           0
                         )
                       )}

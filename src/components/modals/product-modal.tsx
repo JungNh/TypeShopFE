@@ -1,13 +1,13 @@
-import { Button, Form } from 'react-bootstrap';
-import ModalContainer from '../UI/modal-container';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as Yup from 'yup';
-import authAxios from '../../utils/auth-axios';
-import toast from 'react-hot-toast';
-import { setError } from '../../utils/error';
-import { ChangeEvent, useState } from 'react';
-import { baseUrl } from '../../utils/helper';
+import { Button, Col, Form, Row } from "react-bootstrap";
+import ModalContainer from "../UI/modal-container";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
+import authAxios from "../../utils/auth-axios";
+import toast from "react-hot-toast";
+import { setError } from "../../utils/error";
+import { ChangeEvent, useState } from "react";
+import { baseUrl } from "../../utils/helper";
 
 type Props = {
   show: boolean;
@@ -22,6 +22,8 @@ type FormValues = {
   brand: string;
   price: number;
   description: string;
+  qty?: number;
+  price_sale?: number;
 };
 
 const ProductModal = ({ show, handleClose, setRefresh }: Props) => {
@@ -31,11 +33,15 @@ const ProductModal = ({ show, handleClose, setRefresh }: Props) => {
     brand: Yup.string().required(),
     price: Yup.number().required(),
     description: Yup.string().required(),
+    qty: Yup.number().required(),
+    price_sale: Yup.number().required(),
   });
-  const [image, setImage] = useState<string>('');
+  const [image, setImage] = useState<string>("");
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: yupResolver(validationSchema),
@@ -47,9 +53,9 @@ const ProductModal = ({ show, handleClose, setRefresh }: Props) => {
 
       let formData = new FormData();
 
-      formData.append('image', file);
+      formData.append("image", file);
 
-      authAxios.post('/uploads/image', formData).then((res) => {
+      authAxios.post("/uploads/image", formData).then((res) => {
         if (res.data) {
           setImage(`${baseUrl}${res.data}`);
         }
@@ -58,10 +64,16 @@ const ProductModal = ({ show, handleClose, setRefresh }: Props) => {
   };
 
   const onSubmit = (data: FormValues) => {
+    const price = watch("price");
+    const price_sale = watch("price_sale");
+    if (price_sale !== undefined && price_sale > price) {
+      toast.error("Price sale must be less than price");
+      return;
+    }
     authAxios
-      .post('/products', { ...data, image })
+      .post("/products", { ...data, image })
       .then((res) => {
-        toast.success('Product has beend created');
+        toast.success("Product has beend created");
         setRefresh((prev: any) => (prev = !prev));
         handleClose();
       })
@@ -69,74 +81,102 @@ const ProductModal = ({ show, handleClose, setRefresh }: Props) => {
   };
 
   return (
-    <ModalContainer title='Add Product' handleClose={handleClose} show={show}>
+    <ModalContainer title="Add Product" handleClose={handleClose} show={show}>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Form.Group>
           <Form.Label>Name</Form.Label>
           <Form.Control
-            type='text'
-            placeholder='doe'
-            {...register('name')}
-            className={errors.name?.message && 'is-invalid'}
+            type="text"
+            placeholder="doe"
+            {...register("name")}
+            className={errors.name?.message && "is-invalid"}
           />
-          <p className='invalid-feedback'>{errors.name?.message}</p>
+          <p className="invalid-feedback">{errors.name?.message}</p>
         </Form.Group>
         <Form.Group>
           <Form.Label>Image</Form.Label>
           <Form.Control
-            type='file'
-            placeholder='Gtx 1660 super'
-            name='image'
+            type="file"
+            placeholder="Gtx 1660 super"
+            name="image"
             onChange={onChange}
           />
         </Form.Group>
         <Form.Group>
           <Form.Label>Brand</Form.Label>
           <Form.Control
-            type='text'
-            placeholder='Msi'
-            {...register('brand')}
-            className={errors.brand?.message && 'is-invalid'}
+            type="text"
+            placeholder="Msi"
+            {...register("brand")}
+            className={errors.brand?.message && "is-invalid"}
           />
-          <p className='invalid-feedback'>{errors.brand?.message}</p>
+          <p className="invalid-feedback">{errors.brand?.message}</p>
         </Form.Group>
         <Form.Group>
           <Form.Label>Category</Form.Label>
           <Form.Control
-            type='text'
-            placeholder='Graphics'
-            {...register('category')}
-            className={errors.category?.message && 'is-invalid'}
+            type="text"
+            placeholder="Graphics"
+            {...register("category")}
+            className={errors.category?.message && "is-invalid"}
           />
-          <p className='invalid-feedback'>{errors.category?.message}</p>
+          <p className="invalid-feedback">{errors.category?.message}</p>
         </Form.Group>
 
         <Form.Group>
-          <Form.Label>Price</Form.Label>
+          <Form.Label>Quantity</Form.Label>
           <Form.Control
-            type='number'
-            placeholder='200.00'
-            {...register('price')}
-            className={errors.price?.message && 'is-invalid'}
+            type="number"
+            placeholder="0"
+            {...register("qty")}
+            className={errors.qty?.message && "is-invalid"}
           />
-          <p className='invalid-feedback'>{errors.price?.message}</p>
         </Form.Group>
+        <Row>
+          <Col>
+            <Form.Group>
+              <Form.Label>Price</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="200.00"
+                {...register("price")}
+                className={errors.price?.message && "is-invalid"}
+                onChange={(e) => {
+                  setValue("price_sale", parseFloat(e.target.value));
+                }}
+              />
+              <p className="invalid-feedback">{errors.price?.message}</p>
+            </Form.Group>
+          </Col>
+
+          <Col>
+            <Form.Group>
+              <Form.Label>Price Sale</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="0"
+                {...register("price_sale")}
+                className={errors.price_sale?.message && "is-invalid"}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
         <Form.Group>
           <Form.Label>Description</Form.Label>
           <Form.Control
-            as={'textarea'}
+            as={"textarea"}
             rows={3}
-            placeholder='description'
-            {...register('description')}
-            className={errors.description?.message && 'is-invalid'}
+            placeholder="description"
+            {...register("description")}
+            className={errors.description?.message && "is-invalid"}
           />
-          <p className='invalid-feedback'>{errors.description?.message}</p>
+          <p className="invalid-feedback">{errors.description?.message}</p>
         </Form.Group>
         <Button
-          style={{ backgroundColor: '#e03a3c', color: '#fff' }}
-          variant='outline-none'
-          type='submit'
-          className='mt-3 w-full text-white'
+          style={{ backgroundColor: "#e03a3c", color: "#fff" }}
+          variant="outline-none"
+          type="submit"
+          className="mt-3 w-full text-white"
         >
           Ajouter
         </Button>

@@ -6,6 +6,7 @@ import {
   Container,
   Image,
   ListGroup,
+  ProgressBar,
   Row,
 } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
@@ -21,6 +22,10 @@ import { setError } from "../../utils/error";
 import ImageLazy from "../../components/UI/lazy-image";
 import BlueButton from "../../components/UI/blue-button";
 import PaymentModal from "../../components/modals/pay-modal";
+import { HiOutlineNewspaper } from "react-icons/hi2";
+import { LiaShippingFastSolid } from "react-icons/lia";
+import { IoFileTrayStackedOutline } from "react-icons/io5";
+import { IoDownloadOutline } from "react-icons/io5";
 
 const OrderDetails = () => {
   const { order, loading } = useAppSelector((state) => state.orderDetail);
@@ -28,9 +33,19 @@ const OrderDetails = () => {
   const dispatch = useAppDispatch();
   const { id } = useParams();
   const [showPay, setShowPay] = useState(false);
-  
+  const { address, city, postalCode } = order?.shippingAddress || {};
+  const [step, setStep] = useState(order?.status);
+
+  const steps = ["Order", "Shipping", "Delivered", "Received"];
+  const iconSteps = [
+    <HiOutlineNewspaper style={{ width: 30, height: 30 }} />,
+    <IoDownloadOutline style={{ width: 30, height: 30 }} />,
+    <LiaShippingFastSolid style={{ width: 30, height: 30 }} />,
+    <IoFileTrayStackedOutline style={{ width: 30, height: 30 }} />,
+  ];
+
   const itemsPrice: number | undefined = order?.cartItems.reduce(
-    (acc, item) => acc + item.qty * item.price,
+    (acc, item) => acc + item.qty * item.price_sale,
     0
   );
   const navigate = useNavigate();
@@ -63,6 +78,21 @@ const OrderDetails = () => {
     dispatch(getOrderById(id));
   }, [dispatch, id]);
 
+  const getProgress = () => {
+    switch (step) {
+      case "order":
+        return 0;
+      case "shipping":
+        return 1;
+      case "delivered":
+        return 2;
+      case "received":
+        return 3;
+      default:
+        return 0;
+    }
+  };
+
   return (
     <DefaultLayout title="order payment">
       <Container>
@@ -73,12 +103,69 @@ const OrderDetails = () => {
           show={showPay}
           handleClose={() => setShowPay(false)}
         />
-        <h2 className="mb-5">Payment</h2>
+        <h2 className="mb-2">Payment</h2>
+
+        {/* <div className="mb-5">
+          <span> {`Address:  ${postalCode} ${address}, ${city}`}</span>
+        </div> */}
 
         {loading ? (
           <Loader />
         ) : (
           <Row>
+            <div
+              className="mb-5 mt-5 "
+              style={{
+                width: "80%",
+                margin: "auto",
+                display: "block",
+                justifyItems: "center",
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  width: "97%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  top: "-18px",
+                  left: "2%",
+                }}
+              >
+                {iconSteps.map((icon, index) => (
+                  <div className="d-flex flex-column align-items-center">
+                    <div
+                      key={index}
+                      style={{
+                        width: "50px",
+                        height: "50px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        backgroundColor: "#fff",
+                        borderRadius: "50%",
+                        color: getProgress() >= index ? "#007acc" : "#ccc",
+                      }}
+                    >
+                      {icon}
+                    </div>
+                    <div
+                      style={{
+                        color: getProgress() >= index ? "#007acc" : "#ccc",
+                      }}
+                      key={index}
+                    >
+                      {steps[index]}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <ProgressBar
+                now={getProgress() * 33}
+                style={{ width: "95%", alignSelf: "center", marginBottom: 40 }}
+              />
+            </div>
             <Col md={8} className="mb-sm-3 mb-2">
               <Card>
                 <Card.Body>
@@ -99,7 +186,9 @@ const OrderDetails = () => {
                           </Col>
                           <Col>{item?.qty}</Col>
 
-                          <Col>{formatCurrencry(item.price * item.qty)}</Col>
+                          <Col>
+                            {formatCurrencry(item.price_sale * item.qty)}
+                          </Col>
                         </Row>
                       </ListGroup.Item>
                     ))}
@@ -125,7 +214,7 @@ const OrderDetails = () => {
                       <span>
                         {formatCurrencry(
                           order?.cartItems.reduce(
-                            (acc, item) => acc + item.price * item.qty,
+                            (acc, item) => acc + item.price_sale * item.qty,
                             0
                           )
                         )}
@@ -145,9 +234,51 @@ const OrderDetails = () => {
                         <span>{formatCurrencry(totalPrice)}</span>
                       </h5>
                     </ListGroup.Item>
-                    {!order?.isPaid && (
-                      <ListGroup.Item className="stripe__container">
-                        {/* <Stripe
+                    <ListGroup.Item className="stripe__container">
+                      {order?.status === "order" ? (
+                        <>
+                          {!order?.isPaid ? (
+                            <BlueButton
+                              onClick={() => setShowPay(true)}
+                              className="w-full"
+                            >
+                              Payment
+                            </BlueButton>
+                          ) : (
+                            <div
+                              className="w-full"
+                              style={{
+                                backgroundColor: "#008cdd",
+                                color: "#fff",
+                                padding: "10px",
+                                borderRadius: "5px",
+                                textAlign: "center",
+                              }}
+                            >
+                              "Đã thanh toán"
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div
+                          className="w-full"
+                          style={{
+                            backgroundColor: order?.isPaid
+                              ? "#008cdd"
+                              : "#e03a3c",
+                            color: "#fff",
+                            padding: "10px",
+                            borderRadius: "5px",
+                            textAlign: "center",
+                          }}
+                        >
+                          {order?.isPaid
+                            ? "Đã thanh toán"
+                            : "Thanh toán khi nhận hàng"}
+                        </div>
+                      )}
+                    </ListGroup.Item>
+                    {/* <Stripe
                           currency="USD"
                           description={`Total Price ${formatCurrencry(
                             order?.totalPrice
@@ -157,14 +288,6 @@ const OrderDetails = () => {
                           stripeKey={import.meta.env.VITE_API_STRIPE}
                           token={tokenHandler}
                         /> */}
-                        <BlueButton
-                          onClick={() => setShowPay(true)}
-                          className="w-full"
-                        >
-                          Payment
-                        </BlueButton>
-                      </ListGroup.Item>
-                    )}
                   </ListGroup>
                 </Card.Body>
               </Card>

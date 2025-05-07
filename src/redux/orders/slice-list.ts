@@ -4,11 +4,11 @@ import {
   PayloadAction,
   CaseReducer,
   createEntityAdapter,
-} from '@reduxjs/toolkit';
-import toast from 'react-hot-toast';
-import { Product } from '../../components/product-card';
-import authAxios from '../../utils/auth-axios';
-import { setError } from '../../utils/error';
+} from "@reduxjs/toolkit";
+import toast from "react-hot-toast";
+import { Product } from "../../components/product-card";
+import authAxios from "../../utils/auth-axios";
+import { setError } from "../../utils/error";
 
 type Ordertypes = {
   _id: string;
@@ -23,6 +23,7 @@ type Ordertypes = {
   totalPrice: number;
   isPaid: boolean;
   createdAt: Date;
+  status: "order" | "shipping" | "delivered" | "received";
 };
 
 export interface OrderSliceState {
@@ -39,9 +40,9 @@ const initialState: OrderSliceState = {
   totalPrice: 0,
 };
 
-export const getOrdersList = createAsyncThunk('orders/list', async () => {
+export const getOrdersList = createAsyncThunk("orders/list", async () => {
   try {
-    const { data } = await authAxios.get('/orders');
+    const { data } = await authAxios.get("/orders");
     return data;
   } catch (error: any) {
     const message = setError(error);
@@ -55,7 +56,7 @@ const getOrderPrice = createEntityAdapter<OrderSliceState>({
 });
 
 export const orderListSlice = createSlice({
-  name: 'orders-list',
+  name: "orders-list",
   initialState,
   reducers: {},
   extraReducers: (builder) => {

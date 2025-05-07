@@ -23,6 +23,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import Loader from "./components/UI/loader";
 import ErrorFallback from "./components/UI/error-fallback";
 import "react-lazy-load-image-component/src/effects/blur.css";
+import OrderDetailAdmin from "./pages/dashboard/orders/order-details";
 
 const DashboardLayout = lazy(
   () => import("./components/layouts/dashboard-layout")
@@ -92,6 +93,7 @@ const App = () => {
           <Route path="user-list" element={<UserTable />} />
           <Route path="orders-list" element={<OrdersTable />} />
           <Route path="product-edit/:id" element={<ProductUpdate />} />
+          <Route path="order/:id" element={<OrderDetailAdmin />} />
         </Route>
 
         <Route path="/contact" element={<Contact />} />

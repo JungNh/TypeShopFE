@@ -1,4 +1,4 @@
-import { Product } from '../components/product-card';
+import { Product } from "../components/product-card";
 
 export interface Ordertypes {
   _id: string;
@@ -13,6 +13,7 @@ export interface Ordertypes {
   totalPrice: number;
   isPaid: boolean;
   createdAt: Date;
+  status: "order" | "shipping" | "delivered" | "received";
 }
 
 export type ReviewTypes = {

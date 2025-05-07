@@ -1,8 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import toast from 'react-hot-toast';
-import authAxios from '../../utils/auth-axios';
-import { setError } from '../../utils/error';
-import { Ordertypes } from '../../utils/interfaces';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import toast from "react-hot-toast";
+import authAxios from "../../utils/auth-axios";
+import { setError } from "../../utils/error";
+import { Ordertypes } from "../../utils/interfaces";
 
 export interface OrderSliceState {
   order: Ordertypes | null;
@@ -17,7 +17,7 @@ const initialState: OrderSliceState = {
 };
 
 export const getOrderById = createAsyncThunk(
-  'orders/:id',
+  "orders/:id",
   async (id?: string) => {
     try {
       const { data } = await authAxios.get(`/orders/${id}`);
@@ -30,9 +30,16 @@ export const getOrderById = createAsyncThunk(
 );
 
 export const orderDetailSlice = createSlice({
-  name: 'orders-detail',
+  name: "orders-detail",
   initialState,
-  reducers: {},
+  reducers: {
+    updateOrderStatus: (state: OrderSliceState, action: PayloadAction<any>) => {
+      console.log("status_here", action.payload);
+      if (state.order) {
+        state.order = action.payload.data;
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(getOrderById.pending, (state) => {
       state.loading = true;
@@ -46,5 +53,7 @@ export const orderDetailSlice = createSlice({
     });
   },
 });
+
+export const { updateOrderStatus } = orderDetailSlice.actions;
 
 export default orderDetailSlice;

@@ -32,7 +32,9 @@ function ProductTable() {
     'name',
     'brand',
     'category',
+    'qty',
     'price',
+    'price_sale',
     'created At',
     'options',
   ];
@@ -79,7 +81,9 @@ function ProductTable() {
                 <td>{product.name}</td>
                 <td>{product.brand}</td>
                 <td>{product.category}</td>
+                <td>{product.qty}</td>
                 <td>{formatCurrencry(product.price)}</td>
+                <td>{formatCurrencry(product.price_sale)}</td>
                 <td>{getDate(product?.createdAt)}</td>
                 <td>
                   <Link

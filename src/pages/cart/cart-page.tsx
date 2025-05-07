@@ -53,7 +53,7 @@ const CartPage = () => {
                       <Col className="d-none d-lg-block">{item.name}</Col>
                       <Col>{item?.qty}</Col>
 
-                      <Col>{formatCurrencry(item.price * item.qty)}</Col>
+                      <Col>{formatCurrencry(item.price_sale * item.qty)}</Col>
                       <Col>
                         <FaPlus
                           onClick={() => dispatch(addToCart(item))}
@@ -86,7 +86,7 @@ const CartPage = () => {
                       <span>
                         {formatCurrencry(
                           cartItems.reduce(
-                            (acc, item) => acc + item.price * item.qty,
+                            (acc, item) => acc + item.price_sale * item.qty,
                             0
                           )
                         )}

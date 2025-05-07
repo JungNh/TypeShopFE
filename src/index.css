@@ -125,3 +125,16 @@ section {
   margin: 10px 0;
 }
 
+.discount-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #d10000;
+  color: white;
+  padding: 4px 10px;
+  font-size: 14px;
+  font-weight: bold;
+  border-top-left-radius: 6px;
+  border-bottom-right-radius: 8px;
+  z-index: 2;
+}

@@ -15,6 +15,7 @@ export type Product = {
   qty: number;
   createdAt: Date;
   reviews: ReviewTypes[];
+  price_sale: number;
 };
 
 type Props = {
@@ -32,6 +33,11 @@ const ProductCard = ({ product }: Props) => {
         alignItems: "center",
       }}
     >
+      {product.price !== product.price_sale && (
+        <div className="discount-badge">{`Giảm ${Math.round(
+          ((product.price - product.price_sale) / product.price) * 100
+        )}%`}</div>
+      )}
       <Link to={`/products/${product._id}`}>
         <ImageLazy
           imageUrl={product.image}
@@ -46,7 +52,17 @@ const ProductCard = ({ product }: Props) => {
           <Card.Title className="mb-4">
             <span className="fs-2">{product.name}</span>
             <br />
-            <span className="text-muted">{formatCurrencry(product.price)}</span>
+            {product.price !== product.price_sale && (
+              <span
+                className="text-muted "
+                style={{ textDecoration: "line-through" }}
+              >
+                {formatCurrencry(product.price)}
+              </span>
+            )}
+            <span style={{ color: "#d10000" }}>
+              {` ${formatCurrencry(product.price_sale)}`}
+            </span>
           </Card.Title>
         </Card.Body>
       </Link>
