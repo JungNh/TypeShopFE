@@ -51,7 +51,7 @@ const OrderDetailAdmin = () => {
     0
   );
   const navigate = useNavigate();
-  const { address, city, postalCode } = order?.shippingAddress || {};
+  const { address, city, phone } = order?.shippingAddress || {};
 
   const taxPrice = itemsPrice ? itemsPrice * 0.1 : 0;
 
@@ -85,7 +85,7 @@ const OrderDetailAdmin = () => {
           {/* <div className="mb-5">
             <span>
               {" "}
-              {`Address:  ${postalCode} ${address}, ${city}`}
+              {`Address:  ${phone} ${address}, ${city}`}
             </span>
           </div> */}
           <div

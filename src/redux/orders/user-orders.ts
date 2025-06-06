@@ -10,7 +10,7 @@ type Ordertypes = {
   shippingAddress: {
     address: string;
     city: string;
-    postalCode: string;
+    phone: string;
     country: string;
   };
   cartItems: Product[];

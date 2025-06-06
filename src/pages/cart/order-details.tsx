@@ -33,7 +33,7 @@ const OrderDetails = () => {
   const dispatch = useAppDispatch();
   const { id } = useParams();
   const [showPay, setShowPay] = useState(false);
-  const { address, city, postalCode } = order?.shippingAddress || {};
+  const { address, city, phone } = order?.shippingAddress || {};
 
   const steps = ["Order", "Shipping", "Delivered", "Received"];
   const iconSteps = [

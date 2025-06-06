@@ -6,7 +6,7 @@ export interface Ordertypes {
   shippingAddress: {
     address: string;
     city: string;
-    postalCode: string;
+    phone: string;
     country: string;
   };
   cartItems: Product[];
@@ -36,6 +36,6 @@ export type User = {
 export type AddressTypes = {
   address: string;
   city: string;
-  postalCode: string;
+  phone: string;
   country: string;
 };

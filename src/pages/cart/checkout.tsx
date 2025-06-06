@@ -55,7 +55,7 @@ const Checkout = () => {
                       <span> Address: </span>
                       <span>
                         {shippingAddress?.address} {shippingAddress?.city}{" "}
-                        {shippingAddress?.postalCode}
+                        {shippingAddress?.phone}
                       </span>
                     </h4>
                   </ListGroup.Item>

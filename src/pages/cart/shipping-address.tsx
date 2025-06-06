@@ -14,7 +14,7 @@ const ShippingAddress = () => {
   const [formData, setFormData] = useState<AddressTypes>({
     address: '',
     city: '',
-    postalCode: '',
+    phone: '',
     country: '',
   });
 
@@ -31,7 +31,7 @@ const ShippingAddress = () => {
       saveAddress({
         address: formData.address,
         city: formData.city,
-        postalCode: formData.postalCode,
+        phone: formData.phone,
         country: formData.country,
       })
     );
@@ -63,12 +63,15 @@ const ShippingAddress = () => {
             required
           />
         </Form.Group>
-        <Form.Group controlId='postalCode'>
-          <Form.Label>Postal Code</Form.Label>
+        <Form.Group controlId='phone'>
+          <Form.Label>Phone</Form.Label>
           <Form.Control
             onChange={onChange}
-            name='postalCode'
-            placeholder='enter your postal code'
+            name='phone'
+            placeholder='enter your phone number'
+            type='tel'
+            pattern='[0-9]{10,15}'
+            title='Phone number should be between 10 to 15 digits'
             required
           />
         </Form.Group>
