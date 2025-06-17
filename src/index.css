@@ -138,3 +138,8 @@ section {
   border-bottom-right-radius: 8px;
   z-index: 2;
 }
+
+.carousel-inner .lazy-load-image-background {
+  display: inline-block;
+  width: 100% !important;
+}

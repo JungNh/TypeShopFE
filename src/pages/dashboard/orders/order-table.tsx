@@ -2,15 +2,22 @@ import { useEffect, useState } from "react";
 import { Button, Row } from "react-bootstrap";
 import toast from "react-hot-toast";
 import { FaCheck, FaTimes, FaTrash } from "react-icons/fa";
+import { GrChapterNext } from "react-icons/gr";
 import Loader from "../../../components/UI/loader";
 import TableContainer from "../../../components/UI/table-contrainer";
 import { useAppDispatch, useAppSelector } from "../../../redux";
 import { getOrdersList } from "../../../redux/orders/slice-list";
 import authAxios from "../../../utils/auth-axios";
 import { setError } from "../../../utils/error";
-import { formatCurrencry, getDate } from "../../../utils/helper";
+import {
+  formatCurrencry,
+  getDate,
+  getLabelOption,
+} from "../../../utils/helper";
 import { Link } from "react-router-dom";
 import { GrView } from "react-icons/gr";
+import { updateOrderStatus } from "../../../redux/orders/order-details";
+import { STATUS_ORDER } from "../../../constans";
 
 function OrdersTable() {
   const dispatch = useAppDispatch();
@@ -18,6 +25,8 @@ function OrdersTable() {
   const [refresh, setRefresh] = useState<boolean>(false);
   const cols = [
     "Order_id",
+    "Name",
+    "Phone",
     "TotalPrice",
     "Address",
     "Paid",
@@ -26,8 +35,21 @@ function OrdersTable() {
     "Options",
   ];
 
+  const updateStatus = async (data: any) => {
+    if (window.confirm("Bạn chắc chắn muốn chuyển trạng thái đơn hàng?")) {
+      authAxios
+        .post(`/orders/${data?._id}`, data)
+        .then((res) => {
+          dispatch(updateOrderStatus(res));
+          toast.success(`Order has beend ${res.data.status}`);
+          setRefresh((prev) => (prev = !prev));
+        })
+        .catch((err) => toast.error(setError(err)));
+    }
+  };
+
   const onDelete = (id: string | number) => {
-    if (window.confirm("are you sure?")) {
+    if (window.confirm(`Bạn chắc chắn muốn xoá đơn hàng ${id}?`)) {
       authAxios
         .delete(`/orders/${id}`)
         .then((res) => {
@@ -55,7 +77,8 @@ function OrdersTable() {
             {orders.map((order) => (
               <tr key={order._id}>
                 <td>{order._id}</td>
-
+                <td>{order.shippingAddress.nameCus}</td>
+                <td>{order.shippingAddress.phone}</td>
                 <td>{formatCurrencry(order?.totalPrice)}</td>
                 <td>{order?.shippingAddress?.address}</td>
                 <td>
@@ -68,16 +91,18 @@ function OrdersTable() {
                 <td
                   style={{
                     color:
-                      order.status == "order"
+                      order.status == "cancelled"
                         ? "#d10000"
+                        : order.status == "order"
+                        ? "purple"
                         : order.status == "shipping"
                         ? "orange"
                         : order?.status == "delivered"
-                        ? "green"
-                        : "blue",
+                        ? "blue"
+                        : "green",
                   }}
                 >
-                  {order?.status}
+                  {getLabelOption(STATUS_ORDER, order?.status)}
                 </td>
                 <td>{getDate(order?.createdAt)}</td>
                 <td>
@@ -87,6 +112,28 @@ function OrdersTable() {
                   >
                     <GrView />
                   </Link>
+                  <Button
+                    onClick={() => {
+                      updateStatus({
+                        ...order,
+                        isPaid:
+                          order.status == "delivered"
+                            ? true
+                            : order.isPaid,
+                        status:
+                          order.status == "order"
+                            ? "shipping"
+                            : order.status == "shipping"
+                            ? "delivered"
+                            : "received",
+                      });
+                    }}
+                    size="sm"
+                    disabled={order.status == "received" || order.status == "cancelled"}
+                    className="me-2"
+                  >
+                    <GrChapterNext />
+                  </Button>
                   <Button
                     onClick={() => onDelete(order._id)}
                     variant="danger"

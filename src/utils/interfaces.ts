@@ -4,6 +4,7 @@ export interface Ordertypes {
   _id: string;
   user: string;
   shippingAddress: {
+    nameCus?: string;
     address: string;
     city: string;
     phone: string;
@@ -13,7 +14,7 @@ export interface Ordertypes {
   totalPrice: number;
   isPaid: boolean;
   createdAt: Date;
-  status: "order" | "shipping" | "delivered" | "received";
+  status: "order" | "shipping" | "delivered" | "received" | "cancelled";
 }
 
 export type ReviewTypes = {
@@ -34,6 +35,7 @@ export type User = {
 };
 
 export type AddressTypes = {
+  nameCus?: string;
   address: string;
   city: string;
   phone: string;

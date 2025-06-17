@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Card, Col, ListGroup, ProgressBar, Row } from "react-bootstrap";
+import { Button, Card, Col, ListGroup, ProgressBar, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../redux";
 import authAxios from "../../../utils/auth-axios";
@@ -11,11 +11,13 @@ import {
 } from "../../../redux/orders/order-details";
 import Loader from "../../../components/UI/loader";
 import ImageLazy from "../../../components/UI/lazy-image";
-import { formatCurrencry } from "../../../utils/helper";
+import { formatCurrencry, getLabelOption } from "../../../utils/helper";
 import { HiOutlineNewspaper } from "react-icons/hi2";
 import { LiaShippingFastSolid } from "react-icons/lia";
 import { IoFileTrayStackedOutline } from "react-icons/io5";
 import { IoDownloadOutline } from "react-icons/io5";
+import { STEPS_ORDER } from "../../../constans";
+import BlueButton from "../../../components/UI/blue-button";
 
 const OrderDetailAdmin = () => {
   const { order, loading } = useAppSelector((state) => state.orderDetail);
@@ -33,6 +35,8 @@ const OrderDetailAdmin = () => {
 
   const getProgress = useCallback(() => {
     switch (order?.status) {
+      case "cancelled":
+        return -1; // Cancelled orders have no progress
       case "order":
         return 0;
       case "shipping":
@@ -51,7 +55,7 @@ const OrderDetailAdmin = () => {
     0
   );
   const navigate = useNavigate();
-  const { address, city, phone } = order?.shippingAddress || {};
+  const { nameCus, address, city, phone } = order?.shippingAddress || {};
 
   const taxPrice = itemsPrice ? itemsPrice * 0.1 : 0;
 
@@ -60,13 +64,15 @@ const OrderDetailAdmin = () => {
   const totalPrice = itemsPrice && itemsPrice + taxPrice + shippingPrice;
 
   const updateStatus = async (data: any) => {
-    authAxios
-      .post(`/orders/${order?._id}`, data)
-      .then((res) => {
-        dispatch(updateOrderStatus(res));
-        toast.success(`Order has beend ${res.data.status}`);
-      })
-      .catch((err) => toast.error(setError(err)));
+    if (window.confirm("Bạn chắc chắn muốn chuyển trạng thái đơn hàng?")) {
+      authAxios
+        .post(`/orders/${data?._id}`, data)
+        .then((res) => {
+          dispatch(updateOrderStatus(res));
+          toast.success(`Order has beend ${res.data.status}`);
+        })
+        .catch((err) => toast.error(setError(err)));
+    }
   };
 
   useEffect(() => {
@@ -76,121 +82,89 @@ const OrderDetailAdmin = () => {
   return (
     <>
       <h3 className="mt-5 mb-5">
-        <span>Order Detail</span>
+        <span>Đơn hàng: {order?._id}</span>
       </h3>
       {loading ? (
         <Loader />
       ) : (
         <Row>
-          {/* <div className="mb-5">
-            <span>
-              {" "}
-              {`Address:  ${phone} ${address}, ${city}`}
-            </span>
-          </div> */}
-          <div
-            className="mb-5 mt-5 "
-            style={{
-              width: "80%",
-              margin: "auto",
-              display: "block",
-              justifyItems: "center",
-              position: "relative",
-            }}
-          >
+          <Col md={8} className="mb-sm-3 mb-2">
+            <h4 className="mt-5 mb-5">
+              <span>Tình trạng đơn hàng: </span>
+            </h4>
+            {order?.status == "cancelled" && (
+              <h3
+                className="mt-5"
+                style={{ color: "#e03a3c", marginLeft: "10px" }}
+              >
+                Đơn hàng đã bị huỷ
+              </h3>
+            )}
             <div
+              className="mb-20 mt-10"
               style={{
-                position: "absolute",
-                width: "97%",
-                display: "flex",
-                justifyContent: "space-between",
-                top: "-18px",
-                left: "2%",
+                width: "80%",
+                margin: "auto",
+                display: "block",
+                justifyItems: "center",
+                position: "relative",
               }}
             >
-              {iconSteps.map((icon, index) => (
-                <div className="d-flex flex-column align-items-center">
+              <div
+                style={{
+                  position: "absolute",
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  top: "-18px",
+                }}
+              >
+                {iconSteps.map((icon, index) => (
                   <div
-                    key={index}
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      backgroundColor: "#fff",
-                      borderRadius: "50%",
-                      color: getProgress() >= index ? "#007acc" : "#ccc",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {
-                      if(steps[index].toLowerCase() == step) return
-                      setStep(
-                        steps[index].toLowerCase() as
-                          | "order"
-                          | "shipping"
-                          | "delivered"
-                          | "received"
-                      );
-                      updateStatus({ status: steps[index].toLowerCase() });
-                    }}
+                    className="d-flex flex-column align-items-center"
+                    key={`${index}`}
                   >
-                    {icon}
+                    <div
+                      style={{
+                        width: "50px",
+                        height: "50px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        backgroundColor: "#fff",
+                        borderRadius: "50%",
+                        color: getProgress() >= index ? "#007acc" : "#ccc",
+                        cursor: "pointer",
+                      }}
+                      // onClick={() => {
+                      //   if (steps[index].toLowerCase() == step) return;
+                      //   setStep(
+                      //     steps[index].toLowerCase() as
+                      //       | "order"
+                      //       | "shipping"
+                      //       | "delivered"
+                      //       | "received"
+                      //   );
+                      //   updateStatus({ status: steps[index].toLowerCase() });
+                      // }}
+                    >
+                      {icon}
+                    </div>
+                    <div
+                      style={{
+                        color: getProgress() >= index ? "#007acc" : "#ccc",
+                      }}
+                    >
+                      {STEPS_ORDER[index]}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      color: getProgress() >= index ? "#007acc" : "#ccc",
-                    }}
-                    key={index}
-                  >
-                    {steps[index]}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <ProgressBar
+                now={getProgress() * 33}
+                style={{ width: "95%", alignSelf: "center", marginBottom: 40 }}
+              />
             </div>
-            <ProgressBar
-              now={getProgress() * 33}
-              style={{ width: "95%", alignSelf: "center", marginBottom: 40 }}
-            />
-          </div>
-          {/* <div
-            className="mb-5 mt-5 "
-            style={{
-              width: "80%",
-              margin: "auto",
-              display: "block",
-              justifyItems: "center",
-            }}
-          >
-            <ProgressBar
-              now={getProgress()}
-              style={{ width: "95%", alignSelf: "center" }}
-            />
-            <div className="mt-3 w-full d-flex justify-content-between">
-              {steps.map((label, index) => (
-                <div
-                  onClick={() => {
-                    setStep(
-                      label.toLowerCase() as
-                        | "order"
-                        | "shipping"
-                        | "delivered"
-                        | "received"
-                    );
-                    updateStatus({ status: label.toLowerCase() });
-                  }}
-                  style={{
-                    cursor: "pointer",
-                    color: step === label.toLowerCase() ? "#000" : "#ccc",
-                  }}
-                  key={index}
-                >
-                  {label}
-                </div>
-              ))}
-            </div>
-          </div> */}
-          <Col md={8} className="mb-sm-3 mb-2">
             <Card>
               <Card.Body>
                 <h4>Order Summery</h4>
@@ -217,6 +191,61 @@ const OrderDetailAdmin = () => {
                 </ListGroup>
               </Card.Body>
             </Card>
+            <h4 className="mt-5 mb-5">Thông tin giao hàng</h4>
+            <div className="d-flex gap- ms-5">
+              <div
+                style={{
+                  width: "20%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <span className="fw-bold">Tên người nhận:</span>
+                <span className="fw-bold">Địa chỉ:</span>
+                <span className="fw-bold">Số điện thoại:</span>
+              </div>
+              <div
+                style={{
+                  width: "80%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <span>{nameCus}</span>
+                <span>
+                  {address}, {city}
+                </span>
+                <span>{phone}</span>
+              </div>
+            </div>
+            <Button
+              className="w-full mt-5"
+              style={{
+                backgroundColor: "green",
+                color: "#fff",
+                padding: "10px",
+                borderRadius: "5px",
+                textAlign: "center",
+                cursor: "pointer",
+              }}
+              disabled={order?.status == "cancelled" || order?.status == "received"}
+              variant="outline-none"
+              onClick={() => {
+                if (order?.status == "cancelled") return;
+                updateStatus({
+                  ...order,
+                  isPaid: order?.status == "delivered" ? true : order?.isPaid,
+                  status:
+                    order?.status == "order"
+                      ? "shipping"
+                      : order?.status == "shipping"
+                      ? "delivered"
+                      : "received",
+                });
+              }}
+            >
+              Chuyển trạng thái
+            </Button>
           </Col>
           <Col md={4}>
             <Card>

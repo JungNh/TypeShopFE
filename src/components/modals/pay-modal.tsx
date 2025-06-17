@@ -53,7 +53,7 @@ const PaymentModal = ({
   async function checkPayment(orderID: string) {
     try {
       const res = await fetch(
-        "https://script.google.com/macros/s/AKfycbzo50TSjLebcBLJ14_jA3jUzLrfYgd1Hv8PTxTotgE92oFu6rpTOIWctZI97bLbWd7ttw/exec"
+        "https://script.google.com/macros/s/AKfycbz7WborX8SipyFvE-hp2-7fkGNuSuLTXt93beurhLVeKCPJeeBnFTBdNbLYbCZ52HuJTA/exec"
       );
       const { data } = await res.json();
       const paymentStatus = data.find((item: any) =>

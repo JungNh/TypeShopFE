@@ -189,13 +189,15 @@ const Profile = () => {
                     <td
                       style={{
                         color:
-                          order.status == "order"
-                            ? "#d10000"
+                          order.status == "cancelled"
+                            ? "#d10000":
+                            order.status == "order"
+                            ? "purple"
                             : order.status == "shipping"
                             ? "orange"
                             : order?.status == "delivered"
-                            ? "green"
-                            : "blue",
+                            ? "blue"
+                            : "green",
                       }}
                     >
                       {order.status}
@@ -208,13 +210,13 @@ const Profile = () => {
                       >
                         <GrView />
                       </Link>
-                      <Button
+                      {/* <Button
                         onClick={() => onDelete(order._id)}
                         variant="danger"
                         size="sm"
                       >
                         <FaTrash />
-                      </Button>
+                      </Button> */}
                     </td>
                   </tr>
                 ))}

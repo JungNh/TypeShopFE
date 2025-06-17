@@ -14,6 +14,7 @@ type Ordertypes = {
   _id: string;
   user: string;
   shippingAddress: {
+    nameCus?: string;
     address: string;
     city: string;
     phone: string;
@@ -23,7 +24,7 @@ type Ordertypes = {
   totalPrice: number;
   isPaid: boolean;
   createdAt: Date;
-  status: "order" | "shipping" | "delivered" | "received";
+  status: "order" | "shipping" | "delivered" | "received" | "cancelled";
 };
 
 export interface OrderSliceState {

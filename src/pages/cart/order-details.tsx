@@ -13,7 +13,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import DefaultLayout from "../../components/layouts/default-layout";
 import Loader from "../../components/UI/loader";
 import { useAppDispatch, useAppSelector } from "../../redux";
-import { getOrderById } from "../../redux/orders/order-details";
+import {
+  getOrderById,
+  updateOrderStatus,
+} from "../../redux/orders/order-details";
 import { formatCurrencry } from "../../utils/helper";
 import Stripe from "react-stripe-checkout";
 import authAxios from "../../utils/auth-axios";
@@ -26,6 +29,9 @@ import { HiOutlineNewspaper } from "react-icons/hi2";
 import { LiaShippingFastSolid } from "react-icons/lia";
 import { IoFileTrayStackedOutline } from "react-icons/io5";
 import { IoDownloadOutline } from "react-icons/io5";
+import publicAxios from "../../utils/public-axios";
+import RedButton from "../../components/UI/red-button";
+import { STEPS_ORDER } from "../../constans";
 
 const OrderDetails = () => {
   const { order, loading } = useAppSelector((state) => state.orderDetail);
@@ -35,7 +41,6 @@ const OrderDetails = () => {
   const [showPay, setShowPay] = useState(false);
   const { address, city, phone } = order?.shippingAddress || {};
 
-  const steps = ["Order", "Shipping", "Delivered", "Received"];
   const iconSteps = [
     <HiOutlineNewspaper style={{ width: 30, height: 30 }} />,
     <IoDownloadOutline style={{ width: 30, height: 30 }} />,
@@ -77,6 +82,16 @@ const OrderDetails = () => {
     dispatch(getOrderById(id));
   }, [dispatch, id]);
 
+  const updateStatus = async (data: any) => {
+    authAxios
+      .post(`/orders/${order?._id}`, data)
+      .then((res) => {
+        dispatch(updateOrderStatus(res));
+        toast.success(`Order has beend ${res.data.status}`);
+      })
+      .catch((err) => toast.error(setError(err)));
+  };
+
   const getProgress = useCallback(() => {
     switch (order?.status) {
       case "order":
@@ -87,6 +102,8 @@ const OrderDetails = () => {
         return 2;
       case "received":
         return 3;
+      case "cancelled":
+        return -1;
       default:
         return 0;
     }
@@ -102,69 +119,80 @@ const OrderDetails = () => {
           show={showPay}
           handleClose={() => setShowPay(false)}
         />
-        <h2 className="mb-2">Payment</h2>
+        <h2 className="mb-2">Đơn hàng</h2>
 
         {loading ? (
           <Loader />
         ) : (
           <Row>
-            <div
-              className="mb-5 mt-5 "
-              style={{
-                width: "80%",
-                margin: "auto",
-                display: "block",
-                justifyItems: "center",
-                position: "relative",
-              }}
-            >
+            <Col md={8} className="mb-sm-3 mb-2">
+              <h4 className="mt-5">Tình trạng đơn hàng:</h4>
+              {order?.status == "cancelled" && (
+                <h3
+                  className="mt-5"
+                  style={{ color: "#e03a3c", marginLeft: "10px" }}
+                >
+                  Đơn hàng đã bị huỷ
+                </h3>
+              )}
               <div
+                className="mb-5 mt-10 "
                 style={{
-                  position: "absolute",
-                  width: "97%",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  top: "-18px",
-                  left: "2%",
+                  width: "80%",
+                  margin: "auto",
+                  display: "block",
+                  justifyItems: "center",
+                  position: "relative",
                 }}
               >
-                {iconSteps.map((icon, index) => (
-                  <div className="d-flex flex-column align-items-center">
-                    <div
-                      key={index}
-                      style={{
-                        width: "50px",
-                        height: "50px",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        backgroundColor: "#fff",
-                        borderRadius: "50%",
-                        color: getProgress() >= index ? "#007acc" : "#ccc",
-                      }}
-                    >
-                      {icon}
+                <div
+                  style={{
+                    position: "absolute",
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    top: "-18px",
+                  }}
+                >
+                  {iconSteps.map((icon, index) => (
+                    <div className="d-flex flex-column align-items-center" key={index}>
+                      <div
+                        style={{
+                          width: "50px",
+                          height: "50px",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          backgroundColor: "#fff",
+                          borderRadius: "50%",
+                          color: getProgress() >= index ? "#007acc" : "#ccc",
+                        }}
+                      >
+                        {icon}
+                      </div>
+                      <div
+                        style={{
+                          color: getProgress() >= index ? "#007acc" : "#ccc",
+                        }}
+                        key={index}
+                      >
+                        {STEPS_ORDER[index]}
+                      </div>
                     </div>
-                    <div
-                      style={{
-                        color: getProgress() >= index ? "#007acc" : "#ccc",
-                      }}
-                      key={index}
-                    >
-                      {steps[index]}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                <ProgressBar
+                  now={getProgress() * 33}
+                  style={{
+                    width: "90%",
+                    alignSelf: "center",
+                    marginBottom: 40,
+                  }}
+                />
               </div>
-              <ProgressBar
-                now={getProgress() * 33}
-                style={{ width: "95%", alignSelf: "center", marginBottom: 40 }}
-              />
-            </div>
-            <Col md={8} className="mb-sm-3 mb-2">
-              <Card>
+              <Card style={{ marginTop: "70px" }}>
                 <Card.Body>
-                  <h4>Order Summery</h4>
+                  <h4>Sản phẩm</h4>
                   <ListGroup variant="flush">
                     {order?.cartItems.map((item) => (
                       <ListGroup.Item key={item._id}>
@@ -190,19 +218,46 @@ const OrderDetails = () => {
                   </ListGroup>
                 </Card.Body>
               </Card>
+              <h4 className="mt-5 mb-5">Thông tin giao hàng</h4>
+              <div className="d-flex gap-2">
+                <div
+                  style={{
+                    width: "20%",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <span className="fw-bold">Tên người nhận:</span>
+                  <span className="fw-bold">Địa chỉ:</span>
+                  <span className="fw-bold">Số điện thoại:</span>
+                </div>
+                <div
+                  style={{
+                    width: "80%",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <span>{user?.name}</span>
+                  <span>
+                    {address}, {city}
+                  </span>
+                  <span>{phone}</span>
+                </div>
+              </div>
             </Col>
             <Col md={4}>
               <Card>
                 <Card.Body>
-                  <h2 className="text-center">Payment</h2>
+                  <h2 className="text-center">Thông tin thanh toán</h2>
                   <ListGroup variant="flush">
                     <ListGroup.Item as="h2">
-                      SubTotal (
+                      Tổng số (
                       {order?.cartItems.reduce(
                         (acc, item) => acc + item.qty,
                         0
                       )}
-                      ) item
+                      ) sản phẩm
                     </ListGroup.Item>
                     <ListGroup.Item className=" d-flex justify-content-between align-items-center">
                       <span>Total Price :</span>
@@ -237,7 +292,7 @@ const OrderDetails = () => {
                               onClick={() => setShowPay(true)}
                               className="w-full"
                             >
-                              Payment
+                              Thanh toán
                             </BlueButton>
                           ) : (
                             <div
@@ -250,7 +305,7 @@ const OrderDetails = () => {
                                 textAlign: "center",
                               }}
                             >
-                              "Đã thanh toán"
+                              Đã thanh toán
                             </div>
                           )}
                         </>
@@ -265,12 +320,38 @@ const OrderDetails = () => {
                             padding: "10px",
                             borderRadius: "5px",
                             textAlign: "center",
+                            fontSize: "16px",
                           }}
                         >
                           {order?.isPaid
                             ? "Đã thanh toán"
                             : "Thanh toán khi nhận hàng"}
                         </div>
+                      )}
+                      {(order?.status == "order" ||
+                        order?.status == "shipping") && (
+                        <RedButton
+                          onClick={() => updateStatus({ status: "cancelled" })}
+                          disabled={order?.status !== "order"}
+                          className="w-full mt-5"
+                        >
+                          Huỷ đơn hàng
+                        </RedButton>
+                      )}
+
+                      {order?.status == "delivered" && (
+                        <BlueButton
+                          onClick={() => {
+                            updateStatus({
+                              ...order,
+                              isPaid: true,
+                              status: "received",
+                            });
+                          }}
+                          className="w-full mt-5"
+                        >
+                          Xác nhận đã nhận hàng
+                        </BlueButton>
                       )}
                     </ListGroup.Item>
                     {/* <Stripe

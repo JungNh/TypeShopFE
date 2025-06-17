@@ -22,4 +22,6 @@ export const formatTimer = (time: number) => {
 
 export const baseUrl = import.meta.env.VITE_API_URL;
 
-
+export function getLabelOption(options: Array<any>, value: string | boolean | number | undefined) {
+  return options?.find((v) => v?.value === value)?.label || value;
+}
