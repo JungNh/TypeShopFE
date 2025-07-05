@@ -10,6 +10,7 @@ import { ChangeEvent, useState } from "react";
 import { baseUrl } from "../../utils/helper";
 import axios from "axios";
 import BlueButton from "../UI/blue-button";
+import RedButton from "../UI/red-button";
 
 type Props = {
   show: boolean;
@@ -143,19 +144,12 @@ const ProductModal = ({ show, handleClose, setRefresh }: Props) => {
               onChange={handleFileChange}
               style={{ cursor: "pointer" }}
             />
-            <button
+            <RedButton
               onClick={handleUpload}
               disabled={!file || loading}
-              style={{
-                padding: "5px 10px",
-                backgroundColor: "#e03a3c",
-                color: "#fff",
-                border: "none",
-                cursor: "pointer",
-              }}
             >
               {loading ? "Đang tải..." : "Upload"}
-            </button>
+            </RedButton>
             {imageUrl && (
               <div style={{ marginTop: "1rem" }}>
                 <p>Link ảnh:</p>

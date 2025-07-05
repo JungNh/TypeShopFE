@@ -1,4 +1,4 @@
-import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import { Button, Card, Col, Form, Row, Spinner } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
@@ -9,6 +9,8 @@ import toast from "react-hot-toast";
 import { setError } from "../../../utils/error";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import axios from "axios";
+import RedButton from "../../../components/UI/red-button";
+import Loader from "../../../components/UI/loader";
 
 type FormValues = {
   name: string;
@@ -151,19 +153,19 @@ const ProductUpdate = () => {
                     onChange={handleFileChange}
                     style={{ cursor: "pointer" }}
                   />
-                  <button
+                  <RedButton
                     onClick={handleUpload}
                     disabled={!file || loading}
-                    style={{
-                      padding: "5px 10px",
-                      backgroundColor: "#e03a3c",
-                      color: "#fff",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
+                    // style={{
+                    //   padding: "5px 10px",
+                    //   backgroundColor: "#e03a3c",
+                    //   color: "#fff",
+                    //   border: "none",
+                    //   cursor: "pointer",
+                    // }}
                   >
                     {loading ? "Đang tải..." : "Upload"}
-                  </button>
+                  </RedButton>
                   {imageUrl && (
                     <div style={{ marginTop: "1rem" }}>
                       <p>Link ảnh:</p>
@@ -180,11 +182,14 @@ const ProductUpdate = () => {
                         {imageUrl}
                       </a>
                       <br />
-                      <img
-                        src={imageUrl}
-                        alt="Uploaded"
-                        style={{ maxWidth: "300px" }}
-                      />
+                      <div style={{ position: "relative" }}>
+                        <img
+                          src={imageUrl}
+                          alt="Uploaded"
+                          style={{ maxWidth: "300px" }}
+                          loading="lazy"
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
