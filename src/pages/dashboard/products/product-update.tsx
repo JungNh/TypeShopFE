@@ -7,7 +7,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import authAxios from "../../../utils/auth-axios";
 import toast from "react-hot-toast";
 import { setError } from "../../../utils/error";
-import { useEffect, useRef } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
+import axios from "axios";
 
 type FormValues = {
   name: string;
@@ -21,7 +22,9 @@ type FormValues = {
 };
 const ProductUpdate = () => {
   const { products } = useAppSelector((state) => state.productFilter);
-
+  const [file, setFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const { id } = useParams();
   const navigate = useNavigate();
   const product = products.find((p) => p._id === id);
@@ -49,6 +52,42 @@ const ProductUpdate = () => {
     },
   });
 
+  useEffect(() => {
+    if (product) {
+      setImageUrl(product.image || "");
+    }
+  }, [product]);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "shopmilk");
+    setLoading(true);
+    try {
+      const res: any = await axios.post(
+        `https://api.cloudinary.com/v1_1/${
+          import.meta.env.VITE_CLOUDINARY_ID
+        }/image/upload`,
+        formData
+      );
+      if (res.status == 200) setImageUrl(res.data.url);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Upload thất bại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // const priceSaleTouchedRef = useRef(false);
 
   // useEffect(() => {
@@ -65,7 +104,7 @@ const ProductUpdate = () => {
       return;
     }
     authAxios
-      .put(`/products/${product?._id}`, data)
+      .put(`/products/${product?._id}`, { ...data, image: imageUrl })
       .then((res) => {
         toast.success("Product has beend updated");
         navigate("/dashboard/product-list");
@@ -95,16 +134,60 @@ const ProductUpdate = () => {
                 </Form.Group>
                 <Form.Group>
                   <Form.Label>Image</Form.Label>
-                  <Form.Control
+                  {/* <Form.Control
                     type="text"
                     placeholder="image url"
                     {...register("image", {
                       value: product?.image,
                     })}
                     className={errors.image?.message && "is-invalid"}
-                  />
+                  /> */}
                   <p className="invalid-feedback">{errors.image?.message}</p>
                 </Form.Group>
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    style={{ cursor: "pointer" }}
+                  />
+                  <button
+                    onClick={handleUpload}
+                    disabled={!file || loading}
+                    style={{
+                      padding: "5px 10px",
+                      backgroundColor: "#e03a3c",
+                      color: "#fff",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {loading ? "Đang tải..." : "Upload"}
+                  </button>
+                  {imageUrl && (
+                    <div style={{ marginTop: "1rem" }}>
+                      <p>Link ảnh:</p>
+                      <a
+                        href={imageUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: "inline-block",
+                          maxWidth: "100%",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {imageUrl}
+                      </a>
+                      <br />
+                      <img
+                        src={imageUrl}
+                        alt="Uploaded"
+                        style={{ maxWidth: "300px" }}
+                      />
+                    </div>
+                  )}
+                </div>
                 <Form.Group>
                   <Form.Label>Brand</Form.Label>
                   <Form.Control
