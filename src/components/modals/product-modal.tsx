@@ -8,6 +8,8 @@ import toast from "react-hot-toast";
 import { setError } from "../../utils/error";
 import { ChangeEvent, useState } from "react";
 import { baseUrl } from "../../utils/helper";
+import axios from "axios";
+import BlueButton from "../UI/blue-button";
 
 type Props = {
   show: boolean;
@@ -37,6 +39,9 @@ const ProductModal = ({ show, handleClose, setRefresh }: Props) => {
     price_sale: Yup.number().required(),
   });
   const [image, setImage] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const {
     register,
     handleSubmit,
@@ -47,21 +52,21 @@ const ProductModal = ({ show, handleClose, setRefresh }: Props) => {
     resolver: yupResolver(validationSchema),
   });
 
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const file = e.target.files[0];
+  // const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files) {
+  //     const file = e.target.files[0];
 
-      let formData = new FormData();
+  //     let formData = new FormData();
 
-      formData.append("image", file);
+  //     formData.append("image", file);
 
-      authAxios.post("/uploads/image", formData).then((res) => {
-        if (res.data) {
-          setImage(`${baseUrl}${res.data}`);
-        }
-      });
-    }
-  };
+  //     authAxios.post("/uploads/image", formData).then((res) => {
+  //       if (res.data) {
+  //         setImage(`${baseUrl}${res.data}`);
+  //       }
+  //     });
+  //   }
+  // };
 
   const onSubmit = (data: FormValues) => {
     const price = watch("price");
@@ -71,13 +76,43 @@ const ProductModal = ({ show, handleClose, setRefresh }: Props) => {
       return;
     }
     authAxios
-      .post("/products", { ...data, image })
+      .post("/products", { ...data, image: imageUrl })
       .then((res) => {
         toast.success("Product has beend created");
         setRefresh((prev: any) => (prev = !prev));
         handleClose();
       })
       .catch((err) => toast.error(setError(err)));
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "shopmilk");
+    setLoading(true);
+    try {
+      const res: any = await axios.post(
+        `https://api.cloudinary.com/v1_1/${
+          import.meta.env.VITE_CLOUDINARY_ID
+        }/image/upload`,
+        formData
+      );
+      if (res.status == 200) setImageUrl(res.data.url);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Upload thất bại!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -95,12 +130,56 @@ const ProductModal = ({ show, handleClose, setRefresh }: Props) => {
         </Form.Group>
         <Form.Group>
           <Form.Label>Image</Form.Label>
-          <Form.Control
+          {/* <Form.Control
             type="file"
             placeholder="Gtx 1660 super"
             name="image"
             onChange={onChange}
-          />
+          /> */}
+          <div>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              style={{ cursor: "pointer" }}
+            />
+            <button
+              onClick={handleUpload}
+              disabled={!file || loading}
+              style={{
+                padding: "5px 10px",
+                backgroundColor: "#e03a3c",
+                color: "#fff",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              {loading ? "Đang tải..." : "Upload"}
+            </button>
+            {imageUrl && (
+              <div style={{ marginTop: "1rem" }}>
+                <p>Link ảnh:</p>
+                <a
+                  href={imageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-block",
+                    maxWidth: "100%",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {imageUrl}
+                </a>
+                <br />
+                <img
+                  src={imageUrl}
+                  alt="Uploaded"
+                  style={{ maxWidth: "300px" }}
+                />
+              </div>
+            )}
+          </div>
         </Form.Group>
         <Form.Group>
           <Form.Label>Brand</Form.Label>
