@@ -7,7 +7,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import authAxios from "../../../utils/auth-axios";
 import toast from "react-hot-toast";
 import { setError } from "../../../utils/error";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
 
 type FormValues = {
   name: string;
@@ -21,7 +22,9 @@ type FormValues = {
 };
 const ProductUpdate = () => {
   const { products } = useAppSelector((state) => state.productFilter);
-
+    const [file, setFile] = useState<File | null>(null);
+    const [imageUrl, setImageUrl] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
   const { id } = useParams();
   const navigate = useNavigate();
   const product = products.find((p) => p._id === id);
@@ -56,6 +59,35 @@ const ProductUpdate = () => {
   //     setValue("price_sale", price);
   //   }
   // }, [price, setValue]);
+
+    const handleUpload = async () => {
+      if (!file) return;
+  
+      const formData = new FormData();
+      formData.append("image", file);
+  
+      setLoading(true);
+      try {
+        const res: any = await axios.post<{ url: string }>(
+          `https://api.imgbb.com/1/upload?key=${
+            import.meta.env.VITE_IMGBB_API_KEY
+          }`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        console.log("res", res);
+        setImageUrl(res.data.data.url);
+      } catch (error) {
+        console.error("Upload failed:", error);
+        alert("Upload thất bại!");
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const onSubmit = (data: FormValues) => {
     const price = watch("price");
